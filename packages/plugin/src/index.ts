@@ -278,8 +278,61 @@ export interface Hooks {
       metadata: any
     },
   ) => Promise<void>
+  /**
+   * Called before the LLM is invoked. Allows plugins to transform,
+   * strip, or annotate messages (e.g., replace image attachments
+   * with text descriptions from a vision server).
+   *
+   * - `messages`: The full message array (including system prompt)
+   *   as `{ info: Message; parts: Part[] }[]`. Plugins may return
+   *   a transformed copy.
+   *
+   * @deprecated Use `pre_chat.messages.transform` instead.
+   */
   "experimental.chat.messages.transform"?: (
-    input: {},
+    input: {
+      sessionID?: string
+      agent?: string
+      model?: Model
+      messages: {
+        info: Message
+        parts: Part[]
+      }[]
+    },
+    output: {
+      messages: {
+        info: Message
+        parts: Part[]
+      }[]
+    },
+  ) => Promise<void>
+  /**
+   * Called before the LLM is invoked. Allows plugins to transform,
+   * strip, or annotate messages before they are sent to the model.
+   *
+   * This hook fires after system prompt assembly and after
+   * `experimental.chat.system.transform`, but before tool resolution,
+   * headers, and the LLM API call.
+   *
+   * - `sessionID`: The session identifier
+   * - `agent`: The agent name
+   * - `model`: The model being used
+   * - `messages`: The full message array (system + conversation) as
+   *   `{ info: Message; parts: Part[] }[]`. Plugins should return a
+   *   transformed copy of the messages array.
+   *
+   * Default: returns messages unchanged.
+   */
+  "pre_chat.messages.transform"?: (
+    input: {
+      sessionID: string
+      agent: string
+      model: Model
+      messages: {
+        info: Message
+        parts: Part[]
+      }[]
+    },
     output: {
       messages: {
         info: Message
